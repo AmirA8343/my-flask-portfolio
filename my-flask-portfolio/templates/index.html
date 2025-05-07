@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Football Scores</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom, #000000, #1a1a1a);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #ffffff;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      color: #00ffcc;
+      text-shadow: 2px 2px 5px rgba(0, 255, 204, 0.3);
+    }
+
+    .match {
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0, 255, 204, 0.2);
+    }
+
+    .teams {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.3em;
+      font-weight: bold;
+    }
+
+    .meta {
+      font-size: 0.9em;
+      color: #cccccc;
+      margin-top: 5px;
+    }
+
+    .logo {
+      height: 30px;
+      margin: 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Live Football Scores</h1>
+    <div id="scores">Loading live matches...</div>
+  </div>
+
+  <script>
+    function loadScores() {
+      fetch('/scores')
+        .then(response => response.json())
+        .then(data => {
+          const container = document.getElementById("scores");
+          container.innerHTML = "";
+
+          if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = "<p>No live matches at the moment.</p>";
+            return;
+          }
+
+          data.forEach(match => {
+            const home = match.teams?.home?.name || "N/A";
+            const away = match.teams?.away?.name || "N/A";
+            const homeScore = match.goals?.home ?? "-";
+            const awayScore = match.goals?.away ?? "-";
+            const league = match.league?.name || "Unknown League";
+            const date = new Date(match.fixture?.date).toLocaleString();
+            const status = match.fixture?.status?.short || "LIVE";
+            const homeLogo = match.teams?.home?.logo || "";
+            const awayLogo = match.teams?.away?.logo || "";
+
+            const div = document.createElement("div");
+            div.className = "match";
+            div.innerHTML = `
+              <div class="teams">
+                <span><img src="${homeLogo}" class="logo"> ${home}</span>
+                <span>${homeScore} - ${awayScore}</span>
+                <span>${away} <img src="${awayLogo}" class="logo"></span>
+              </div>
+              <div class="meta">
+                ${league} | ${date} | Status: ${status}
+              </div>
+            `;
+            container.appendChild(div);
+          });
+        })
+        .catch(err => {
+          document.getElementById("scores").innerHTML = `<p style="color:red">Error loading scores: ${err}</p>`;
+        });
+    }
+
+    loadScores();
+    setInterval(loadScores, 60000);
+  </script>
+</body>
+</html>
