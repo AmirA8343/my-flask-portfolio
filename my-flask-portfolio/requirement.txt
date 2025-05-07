@@ -1,0 +1,4 @@
+flask
+gunicorn
+requests        # If you use it to fetch data
+pandas          # If you do data manipulation
